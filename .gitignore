@@ -1,0 +1,36 @@
+# --- General ---
+.DS_Store
+.vscode/
+.idea/
+*.log
+.gemini/
+
+# --- Backend (.NET) ---
+[Bb]in/
+[Oo]bj/
+appsettings.Development.json
+Properties/launchSettings.json
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# --- Frontend (Node/React) ---
+node_modules/
+dist/
+dist-ssr/
+*.local
+.env
+.env.*
+!.env.example
+.vite/
+
+# --- PWA ---
+public/sw.js
+public/workbox-*.js
+
+# --- Agent/Artifacts ---
+.agents/
+.claude/
+artifacts/
+scratch/

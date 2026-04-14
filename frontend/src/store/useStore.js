@@ -1,0 +1,111 @@
+import { create } from 'zustand';
+import { expensesAPI, authAPI } from '../services/apiService';
+
+const storedUser = localStorage.getItem('user_info');
+
+export const useStore = create((set) => ({
+  user: storedUser ? JSON.parse(storedUser) : null,
+  isAuthenticated: !!localStorage.getItem('jwt_token'),
+  expenses: [],
+  isLoading: false,
+  error: null,
+
+  login: async (credentials) => {
+    set({ isLoading: true, error: null });
+    try {
+      const data = await authAPI.login(credentials);
+      // Backend returns: { Token, FullName, Email, Id }
+      
+      const token = data.Token || data.token;
+      const userObj = { 
+        name: data.FullName || data.fullName, 
+        email: data.Email || data.email, 
+        id: data.Id || data.id 
+      };
+
+      localStorage.setItem('jwt_token', token);
+      localStorage.setItem('user_info', JSON.stringify(userObj));
+
+      set({ 
+        user: userObj,
+        isAuthenticated: true, 
+        isLoading: false 
+      });
+      return true;
+    } catch (err) {
+      const message = err.response?.data?.message || 'Giriş başarısız';
+      set({ error: message, isLoading: false });
+      return false;
+    }
+  },
+
+  register: async (userData) => {
+    set({ isLoading: true, error: null });
+    try {
+      await authAPI.register(userData);
+      // Depending on backend, we might auto-login or redirect.
+      // Current backend says "Kayıt başarılı! Giriş yapabilirsiniz."
+      set({ isLoading: false });
+      return true;
+    } catch (err) {
+      const message = err.response?.data?.message || 'Kayıt başarısız';
+      set({ error: message, isLoading: false });
+      return false;
+    }
+  },
+
+  logout: () => {
+    localStorage.removeItem('jwt_token');
+    localStorage.removeItem('user_info');
+    set({ user: null, isAuthenticated: false, expenses: [] });
+  },
+
+  fetchExpenses: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const data = await expensesAPI.getAll();
+      // Backend returns fields like 'title', 'amount', 'id', 'createdAt'
+      // Mapping 'createdAt' to 'date' for UI compatibility
+      const mappedData = data.map(item => ({
+        ...item,
+        date: item.transactionDate || item.createdAt || new Date().toISOString(),
+        category: 'Diğer' // Default since backend doesn't have category yet
+      }));
+      set({ expenses: mappedData, isLoading: false });
+    } catch (err) {
+      set({ error: err.message || 'Veriler alınamadı', isLoading: false });
+    }
+  },
+
+  addExpense: async (expenseData) => {
+    set({ isLoading: true, error: null });
+    try {
+      const newExpense = await expensesAPI.create(expenseData);
+      const mappedExpense = {
+        ...newExpense,
+        date: newExpense.transactionDate || newExpense.createdAt || expenseData.date,
+        category: expenseData.category || 'Diğer'
+      };
+      set((state) => ({
+        expenses: [mappedExpense, ...state.expenses],
+        isLoading: false
+      }));
+    } catch (err) {
+      const message = err.response?.data?.message || err.message || 'Ekleme başarısız';
+      set({ error: message, isLoading: false });
+    }
+  },
+
+  removeExpense: async (id) => {
+    set({ isLoading: true, error: null });
+    try {
+      await expensesAPI.delete(id);
+      set((state) => ({
+        expenses: state.expenses.filter((e) => e.id !== id),
+        isLoading: false
+      }));
+    } catch (err) {
+      set({ error: err.message || 'Silme başarısız', isLoading: false });
+    }
+  }
+}));
