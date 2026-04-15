@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5124/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5124/api/';
 
 const apiService = axios.create({
   baseURL: API_BASE_URL,
@@ -41,7 +41,7 @@ apiService.interceptors.response.use(
 export const authAPI = {
   login: async (credentials) => {
     // Backend: { Email, Password }
-    const response = await apiService.post('/auth/login', {
+    const response = await apiService.post('auth/login', {
       email: credentials.email,
       password: credentials.password
     });
@@ -49,7 +49,7 @@ export const authAPI = {
   },
   register: async (userData) => {
     // Backend expects: FullName, Email, Password
-    const response = await apiService.post('/auth/register', {
+    const response = await apiService.post('auth/register', {
       fullName: userData.name,
       email: userData.email,
       password: userData.password
@@ -60,7 +60,7 @@ export const authAPI = {
 
 export const expensesAPI = {
   getAll: async () => {
-    const response = await apiService.get('/transactions');
+    const response = await apiService.get('transactions');
     return response.data;
   },
   create: async (data) => {
@@ -70,11 +70,11 @@ export const expensesAPI = {
       amount: parseFloat(data.amount),
       transactionDate: data.date
     };
-    const response = await apiService.post('/transactions', payload);
+    const response = await apiService.post('transactions', payload);
     return response.data;
   },
   delete: async (id) => {
-    const response = await apiService.delete(`/transactions/${id}`);
+    const response = await apiService.delete(`transactions/${id}`);
     return response.data;
   },
 };

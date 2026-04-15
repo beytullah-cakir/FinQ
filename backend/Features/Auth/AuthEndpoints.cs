@@ -23,7 +23,7 @@ public static class AuthEndpoints
             try 
             {
                 // check if user exists
-                var existingUser = await db.Users.AnyAsync(x => x.Email == request.Email);
+                var existingUser = await db.Users.AnyAsync(x => x.Email == request.Email, System.Threading.CancellationToken.None);
                 if (existingUser)
                 {
                     return Results.BadRequest(new { message = "Bu email adresi zaten kullanımda." });
@@ -43,7 +43,7 @@ public static class AuthEndpoints
                 };
 
                 db.Users.Add(newUser);
-                await db.SaveChangesAsync();
+                await db.SaveChangesAsync(System.Threading.CancellationToken.None);
                 return Results.Ok(new { message = "Kayıt başarıyla oluşturuldu." });
             }
             catch (Exception ex)
@@ -56,7 +56,7 @@ public static class AuthEndpoints
         group.MapPost("/login", async (AppDbContext db, IConfiguration config, [FromBody] LoginRequest request) =>
         {
             // Kullanıcıyı emaili ile arıyoruz
-            var user = await db.Users.FirstOrDefaultAsync(x => x.Email == request.Email);
+            var user = await db.Users.FirstOrDefaultAsync(x => x.Email == request.Email, System.Threading.CancellationToken.None);
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             {

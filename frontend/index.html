@@ -10,6 +10,19 @@
     <meta name="apple-mobile-web-app-title" content="FinQ" />
     <link rel="apple-touch-icon" href="/icon-512.png" />
     <title>FinQ - Finans Takip</title>
+    <script>
+      (function() {
+        try {
+          var theme = localStorage.getItem('theme');
+          var supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (theme === 'dark' || (!theme && supportDarkMode)) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

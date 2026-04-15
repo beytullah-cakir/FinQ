@@ -8,6 +8,8 @@ export const useStore = create((set) => ({
   isAuthenticated: !!localStorage.getItem('jwt_token'),
   expenses: [],
   isLoading: false,
+  isAdding: false,
+  isDeleting: false,
   error: null,
 
   login: async (credentials) => {
@@ -61,9 +63,12 @@ export const useStore = create((set) => ({
   },
 
   fetchExpenses: async () => {
+    console.log('Fetching expenses...');
     set({ isLoading: true, error: null });
     try {
       const data = await expensesAPI.getAll();
+      console.log('Expenses received raw:', data);
+      
       // Backend returns fields like 'title', 'amount', 'id', 'createdAt'
       // Mapping 'createdAt' to 'date' for UI compatibility
       const mappedData = data.map(item => ({
@@ -71,14 +76,16 @@ export const useStore = create((set) => ({
         date: item.transactionDate || item.createdAt || new Date().toISOString(),
         category: 'Diğer' // Default since backend doesn't have category yet
       }));
+      console.log('Expenses mapped:', mappedData);
       set({ expenses: mappedData, isLoading: false });
     } catch (err) {
+      console.error('Fetch expenses error:', err);
       set({ error: err.message || 'Veriler alınamadı', isLoading: false });
     }
   },
 
   addExpense: async (expenseData) => {
-    set({ isLoading: true, error: null });
+    set({ isAdding: true, error: null });
     try {
       const newExpense = await expensesAPI.create(expenseData);
       const mappedExpense = {
@@ -88,24 +95,24 @@ export const useStore = create((set) => ({
       };
       set((state) => ({
         expenses: [mappedExpense, ...state.expenses],
-        isLoading: false
+        isAdding: false
       }));
     } catch (err) {
       const message = err.response?.data?.message || err.message || 'Ekleme başarısız';
-      set({ error: message, isLoading: false });
+      set({ error: message, isAdding: false });
     }
   },
 
   removeExpense: async (id) => {
-    set({ isLoading: true, error: null });
+    set({ isDeleting: true, error: null });
     try {
       await expensesAPI.delete(id);
       set((state) => ({
         expenses: state.expenses.filter((e) => e.id !== id),
-        isLoading: false
+        isDeleting: false
       }));
     } catch (err) {
-      set({ error: err.message || 'Silme başarısız', isLoading: false });
+      set({ error: err.message || 'Silme başarısız', isDeleting: false });
     }
   }
 }));

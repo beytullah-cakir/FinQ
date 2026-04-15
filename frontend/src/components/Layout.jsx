@@ -13,14 +13,8 @@ export default function Layout() {
   const { isAuthenticated, logout } = useStore();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // Check initial dark mode from system preference or local storage
-    if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, []);
+  // Theme logic is now handled in index.html head to prevent flash of unstyled content
+  // useEffect was removed from here.
 
   const toggleDarkMode = () => {
     if (document.documentElement.classList.contains('dark')) {

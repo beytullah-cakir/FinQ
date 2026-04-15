@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useStore } from '../store/useStore';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-import { Trash2, Plus, Calendar, DollarSign, Tag, TrendingDown } from 'lucide-react';
+import { Trash2, Plus, Calendar, DollarSign, Tag, TrendingDown, Loader2 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -10,7 +10,7 @@ function cn(...inputs) {
 }
 
 export default function Dashboard() {
-  const { expenses, fetchExpenses, addExpense, removeExpense, isLoading, user, error } = useStore();
+  const { expenses, fetchExpenses, addExpense, removeExpense, isAdding, user, error } = useStore();
   const [filterCategory, setFilterCategory] = useState('Hepsi');
   const [formData, setFormData] = useState({ title: '', amount: '', date: '', category: 'Gıda' });
 
@@ -146,9 +146,19 @@ export default function Dashboard() {
 
               <button 
                 type="submit" 
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-2.5 rounded-lg font-medium transition-colors shadow-sm mt-2 flex justify-center items-center gap-2"
+                disabled={isAdding}
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-2.5 rounded-lg font-medium transition-all shadow-sm mt-2 flex justify-center items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                <Plus className="h-4 w-4" /> Ekle
+                {isAdding ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Ekleniyor...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="h-4 w-4" /> Ekle
+                  </>
+                )}
               </button>
             </form>
           </div>

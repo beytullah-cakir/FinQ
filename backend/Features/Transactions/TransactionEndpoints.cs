@@ -17,9 +17,10 @@ public static class TransactionEndpoints
         group.MapGet("/", async (AppDbContext db, ClaimsPrincipal user) =>
         {
             var userId = GetUserId(user);
+            
             var transactions = await db.Transactions
                                        .Where(x => x.UserId == userId)
-                                       .ToListAsync();
+                                       .ToListAsync(System.Threading.CancellationToken.None);
             
             return Results.Ok(transactions);
         });
@@ -40,7 +41,7 @@ public static class TransactionEndpoints
             };
 
             db.Transactions.Add(transaction);
-            await db.SaveChangesAsync();
+            await db.SaveChangesAsync(System.Threading.CancellationToken.None);
 
             return Results.Created($"/api/transactions/{transaction.Id}", new 
             { 
@@ -58,7 +59,7 @@ public static class TransactionEndpoints
             var userId = GetUserId(user);
             
             var transaction = await db.Transactions
-                                      .FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId);
+                                      .FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId, System.Threading.CancellationToken.None);
 
             if (transaction == null)
             {
@@ -66,7 +67,7 @@ public static class TransactionEndpoints
             }
 
             db.Transactions.Remove(transaction);
-            await db.SaveChangesAsync();
+            await db.SaveChangesAsync(System.Threading.CancellationToken.None);
                         
             return Results.NoContent();
         });
@@ -77,7 +78,12 @@ public static class TransactionEndpoints
         var sub = user.FindFirst(ClaimTypes.NameIdentifier)?.Value 
                   ?? user.FindFirst("sub")?.Value;
                   
-        return Guid.Parse(sub!);
+        if (string.IsNullOrEmpty(sub))
+        {
+            throw new Exception("Unauthorized: User ID not found in token.");
+        }
+
+        return Guid.Parse(sub);
     }
 }
 
