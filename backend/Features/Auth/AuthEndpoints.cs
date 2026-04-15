@@ -1,6 +1,5 @@
-namespace PersonalFinanceTracker.Features.Auth;
-
 using PersonalFinanceTracker.Domain.Entities;
+using PersonalFinanceTracker.Infrastructure.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -8,28 +7,31 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using BCrypt.Net;
+using Microsoft.EntityFrameworkCore;
+
+namespace PersonalFinanceTracker.Features.Auth;
 
 public static class AuthEndpoints
 {
     public static void MapAuthEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/auth").WithTags("Auth");
+        var group = app.MapGroup("/api/auth");
 
-        // 1. KAYIT OLMA (REGISTER)
-        group.MapPost("/register", async (Supabase.Client client, [FromBody] RegisterRequest request) =>
+        // register
+        group.MapPost("/register", async (AppDbContext db, [FromBody] RegisterRequest request) =>
         {
             try 
             {
-                // Önce bu email ile kayıtlı biri var mı kontrol ediyoruz
-                var existingUser = await client.From<User>().Where(x => x.Email == request.Email).Get();
-                if (existingUser.Models.Any())
+                // check if user exists
+                var existingUser = await db.Users.AnyAsync(x => x.Email == request.Email);
+                if (existingUser)
                 {
                     return Results.BadRequest(new { message = "Bu email adresi zaten kullanımda." });
                 }
 
                 // Şifreyi hashleyerek güvenli hale getiriyoruz
-                var salt = BCrypt.GenerateSalt();
-                var hashedPassword = BCrypt.HashPassword(request.Password, salt);
+                var salt = BCrypt.Net.BCrypt.GenerateSalt();
+                var hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password, salt);
 
                 var newUser = new User
                 {
@@ -40,7 +42,8 @@ public static class AuthEndpoints
                     CreatedAt = DateTime.UtcNow
                 };
 
-                await client.From<User>().Insert(newUser);
+                db.Users.Add(newUser);
+                await db.SaveChangesAsync();
                 return Results.Ok(new { message = "Kayıt başarıyla oluşturuldu." });
             }
             catch (Exception ex)
@@ -50,13 +53,12 @@ public static class AuthEndpoints
         });
 
         // 2. GİRİŞ YAPMA (LOGIN)
-        group.MapPost("/login", async (Supabase.Client client, IConfiguration config, [FromBody] LoginRequest request) =>
+        group.MapPost("/login", async (AppDbContext db, IConfiguration config, [FromBody] LoginRequest request) =>
         {
             // Kullanıcıyı emaili ile arıyoruz
-            var response = await client.From<User>().Where(x => x.Email == request.Email).Get();
-            var user = response.Models.FirstOrDefault();
+            var user = await db.Users.FirstOrDefaultAsync(x => x.Email == request.Email);
 
-            if (user == null || !BCrypt.Verify(request.Password, user.PasswordHash))
+            if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             {
                 return Results.Unauthorized();
             }

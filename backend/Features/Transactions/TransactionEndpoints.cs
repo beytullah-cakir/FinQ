@@ -1,51 +1,46 @@
-namespace PersonalFinanceTracker.Features.Transactions;
-
+using Microsoft.EntityFrameworkCore;
 using PersonalFinanceTracker.Domain.Entities;
+using PersonalFinanceTracker.Infrastructure.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+
+namespace PersonalFinanceTracker.Features.Transactions;
 
 public static class TransactionEndpoints
 {
     public static void MapTransactionEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/transactions")
-                       .RequireAuthorization() // Bu grup altındaki tüm endpointler artık JWT ister!
-                       .WithTags("Transactions");
+                       .RequireAuthorization();
 
-        // GET: Sadece giriş yapan kullanıcının kendi işlemlerini getirir
-        group.MapGet("/", async (Supabase.Client client, ClaimsPrincipal user) =>
+        group.MapGet("/", async (AppDbContext db, ClaimsPrincipal user) =>
         {
             var userId = GetUserId(user);
-            var response = await client.From<Transaction>()
+            var transactions = await db.Transactions
                                        .Where(x => x.UserId == userId)
-                                       .Get();
+                                       .ToListAsync();
             
-            return Results.Ok(response.Models);
+            return Results.Ok(transactions);
         });
 
-        // POST: Yeni İşlem Ekleme (UserId'yi JWT'den otomatik alır)
-        group.MapPost("/", async (Supabase.Client client, ClaimsPrincipal user, [FromBody] TransactionDto request) =>
+        // POST: Yeni İşlem Ekleme
+        group.MapPost("/", async (AppDbContext db, ClaimsPrincipal user, [FromBody] TransactionDto request) =>
         {
             var userId = GetUserId(user);
             
             var transaction = new Transaction
             {
                 Id = Guid.NewGuid(),
-                UserId = userId, // Manuel gönderim yerine Token'dan gelen güvenli ID kullanılır
+                UserId = userId,
                 Title = request.Title,
                 Amount = request.Amount,
-                TransactionDate = request.TransactionDate,
+                TransactionDate = DateTime.SpecifyKind(request.TransactionDate, DateTimeKind.Utc),
                 CreatedAt = DateTime.UtcNow
             };
 
-            var response = await client.From<Transaction>().Insert(transaction);
-            
-            if (response.ResponseMessage != null && !response.ResponseMessage.IsSuccessStatusCode)
-            {
-                var error = await response.ResponseMessage.Content.ReadAsStringAsync();
-                return Results.BadRequest(new { message = "İşlem kaydedilemedi", error });
-            }
+            db.Transactions.Add(transaction);
+            await db.SaveChangesAsync();
 
             return Results.Created($"/api/transactions/{transaction.Id}", new 
             { 
@@ -58,15 +53,20 @@ public static class TransactionEndpoints
         });
 
         // DELETE: Sadece kendi işlemini silebilir
-        group.MapDelete("/{id:guid}", async (Supabase.Client client, ClaimsPrincipal user, Guid id) =>
+        group.MapDelete("/{id:guid}", async (AppDbContext db, ClaimsPrincipal user, Guid id) =>
         {
             var userId = GetUserId(user);
             
-            // Hem ID hem de UserId kontrolü yaparak başkasının verisini silmeyi engelliyoruz
-            await client.From<Transaction>()
-                        .Where(x => x.Id == id)
-                        .Where(x => x.UserId == userId)
-                        .Delete();
+            var transaction = await db.Transactions
+                                      .FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId);
+
+            if (transaction == null)
+            {
+                return Results.NotFound();
+            }
+
+            db.Transactions.Remove(transaction);
+            await db.SaveChangesAsync();
                         
             return Results.NoContent();
         });
@@ -81,5 +81,4 @@ public static class TransactionEndpoints
     }
 }
 
-// DTO'da artık UserId'ye gerek kalmadı, çünkü token'dan alıyoruz!
 public record TransactionDto(string Title, decimal Amount, DateTime TransactionDate);

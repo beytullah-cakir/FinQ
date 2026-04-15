@@ -1,4 +1,5 @@
-using Supabase;
+using Microsoft.EntityFrameworkCore;
+using PersonalFinanceTracker.Infrastructure.Data;
 using PersonalFinanceTracker.Infrastructure.ExceptionHandling;
 using PersonalFinanceTracker.Features.Transactions;
 using PersonalFinanceTracker.Features.Auth;
@@ -48,9 +49,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-// Supabase Client Singleton
-var supabaseOptions = new SupabaseOptions { AutoRefreshToken = true };
-builder.Services.AddSingleton(provider => new Client(supabaseUrl, supabaseKey, supabaseOptions));
+// Entity Framework Core Configuration
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();

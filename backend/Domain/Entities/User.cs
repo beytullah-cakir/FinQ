@@ -1,12 +1,11 @@
-using Postgrest.Attributes;
-using Postgrest.Models;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PersonalFinanceTracker.Domain.Entities;
 
 [Table("users")]
-public class User : BaseModel
+public class User
 {
-    [PrimaryKey("id", false)]
+    [Column("id")]
     public Guid Id { get; set; }
 
     [Column("full_name")]
