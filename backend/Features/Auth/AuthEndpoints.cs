@@ -23,7 +23,8 @@ public static class AuthEndpoints
             try 
             {
                 // check if user exists
-                var existingUser = await db.Users.AnyAsync(x => x.Email == request.Email, System.Threading.CancellationToken.None);
+                var existingUser = await db.Users.AnyAsync(x => x.Email == request.Email, 
+                System.Threading.CancellationToken.None);
                 if (existingUser)
                 {
                     return Results.BadRequest(new { message = "Bu email adresi zaten kullanımda." });

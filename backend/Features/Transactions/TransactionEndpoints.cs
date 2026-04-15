@@ -25,7 +25,7 @@ public static class TransactionEndpoints
             return Results.Ok(transactions);
         });
 
-        // POST: Yeni İşlem Ekleme
+        
         group.MapPost("/", async (AppDbContext db, ClaimsPrincipal user, [FromBody] TransactionDto request) =>
         {
             var userId = GetUserId(user);
