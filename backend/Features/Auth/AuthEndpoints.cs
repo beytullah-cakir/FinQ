@@ -10,6 +10,7 @@ using BCrypt.Net;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 using PersonalFinanceTracker.Infrastructure.Dtos;
+using PersonalFinanceTracker.Infrastructure.Validation;
 
 namespace PersonalFinanceTracker.Features.Auth;
 
@@ -47,7 +48,7 @@ public static class AuthEndpoints
             {
                  return Results.BadRequest(new { message = $"Veritabanı hatası: {ex.Message}" });
             }
-        });
+        }).AddEndpointFilter<ValidationFilter<RegisterRequest>>();
 
         // 2. GİRİŞ YAPMA (LOGIN)
         group.MapPost("/login", async (AppDbContext db, IConfiguration config, IMapper mapper, [FromBody] LoginRequest request) =>
@@ -69,7 +70,7 @@ public static class AuthEndpoints
                 Token = tokenString, 
                 User = userResponse
             });
-        });
+        }).AddEndpointFilter<ValidationFilter<LoginRequest>>();
     }
 
     private static string GenerateJwtToken(User user, IConfiguration config)

@@ -4,6 +4,8 @@ using PersonalFinanceTracker.Infrastructure.ExceptionHandling;
 using PersonalFinanceTracker.Features.Transactions;
 using PersonalFinanceTracker.Features.Auth;
 using PersonalFinanceTracker.Features.Profile;
+using PersonalFinanceTracker.Infrastructure.Validation;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -67,6 +69,9 @@ builder.Services.AddDbContext<AppDbContext>(options => {
 
 // AutoMapper Configuration
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
+
+// FluentValidation Configuration
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();

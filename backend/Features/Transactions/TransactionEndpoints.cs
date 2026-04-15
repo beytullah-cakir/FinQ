@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using AutoMapper;
 using PersonalFinanceTracker.Infrastructure.Dtos;
+using PersonalFinanceTracker.Infrastructure.Validation;
 
 namespace PersonalFinanceTracker.Features.Transactions;
 
@@ -41,7 +42,7 @@ public static class TransactionEndpoints
 
             var response = mapper.Map<TransactionResponse>(transaction);
             return Results.Created($"/api/transactions/{transaction.Id}", response);
-        });
+        }).AddEndpointFilter<ValidationFilter<TransactionRequest>>();
 
         // DELETE: Sadece kendi işlemini silebilir
         group.MapDelete("/{id:guid}", async (AppDbContext db, ClaimsPrincipal user, Guid id) =>

@@ -10,6 +10,7 @@ using BCrypt.Net;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 using PersonalFinanceTracker.Infrastructure.Dtos;
+using PersonalFinanceTracker.Infrastructure.Validation;
 
 namespace PersonalFinanceTracker.Features.Profile;
 
@@ -56,7 +57,7 @@ public static class ProfileEndPoints
                 message = "Profil başarıyla güncellendi.",
                 user = userResponse
             });
-        });
+        }).AddEndpointFilter<ValidationFilter<UpdateProfileRequest>>();
     }
 
     private static Guid GetUserId(ClaimsPrincipal user)
