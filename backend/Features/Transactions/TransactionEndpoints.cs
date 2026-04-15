@@ -4,6 +4,8 @@ using PersonalFinanceTracker.Infrastructure.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using AutoMapper;
+using PersonalFinanceTracker.Infrastructure.Dtos;
 
 namespace PersonalFinanceTracker.Features.Transactions;
 
@@ -14,7 +16,7 @@ public static class TransactionEndpoints
         var group = app.MapGroup("/api/transactions")
                        .RequireAuthorization();
 
-        group.MapGet("/", async (AppDbContext db, ClaimsPrincipal user) =>
+        group.MapGet("/", async (AppDbContext db, ClaimsPrincipal user, IMapper mapper) =>
         {
             var userId = GetUserId(user);
             
@@ -22,35 +24,23 @@ public static class TransactionEndpoints
                                        .Where(x => x.UserId == userId)
                                        .ToListAsync(System.Threading.CancellationToken.None);
             
-            return Results.Ok(transactions);
+            var response = mapper.Map<List<TransactionResponse>>(transactions);
+            return Results.Ok(response);
         });
 
         
-        group.MapPost("/", async (AppDbContext db, ClaimsPrincipal user, [FromBody] TransactionDto request) =>
+        group.MapPost("/", async (AppDbContext db, ClaimsPrincipal user, IMapper mapper, [FromBody] TransactionRequest request) =>
         {
             var userId = GetUserId(user);
             
-            var transaction = new Transaction
-            {
-                Id = Guid.NewGuid(),
-                UserId = userId,
-                Title = request.Title,
-                Amount = request.Amount,
-                TransactionDate = DateTime.SpecifyKind(request.TransactionDate, DateTimeKind.Utc),
-                CreatedAt = DateTime.UtcNow
-            };
+            var transaction = mapper.Map<Transaction>(request);
+            transaction.UserId = userId;
 
             db.Transactions.Add(transaction);
             await db.SaveChangesAsync(System.Threading.CancellationToken.None);
 
-            return Results.Created($"/api/transactions/{transaction.Id}", new 
-            { 
-                Id = transaction.Id,
-                Title = transaction.Title,
-                Amount = transaction.Amount,
-                TransactionDate = transaction.TransactionDate,
-                CreatedAt = transaction.CreatedAt
-            });
+            var response = mapper.Map<TransactionResponse>(transaction);
+            return Results.Created($"/api/transactions/{transaction.Id}", response);
         });
 
         // DELETE: Sadece kendi işlemini silebilir
@@ -86,5 +76,3 @@ public static class TransactionEndpoints
         return Guid.Parse(sub);
     }
 }
-
-public record TransactionDto(string Title, decimal Amount, DateTime TransactionDate);

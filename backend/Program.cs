@@ -65,6 +65,9 @@ builder.Services.AddDbContext<AppDbContext>(options => {
     options.EnableSensitiveDataLogging();
 });
 
+// AutoMapper Configuration
+builder.Services.AddAutoMapper(typeof(Program).Assembly);
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 

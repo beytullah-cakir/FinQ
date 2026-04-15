@@ -8,6 +8,8 @@ using System.Security.Claims;
 using System.Text;
 using BCrypt.Net;
 using Microsoft.EntityFrameworkCore;
+using AutoMapper;
+using PersonalFinanceTracker.Infrastructure.Dtos;
 
 namespace PersonalFinanceTracker.Features.Auth;
 
@@ -18,7 +20,7 @@ public static class AuthEndpoints
         var group = app.MapGroup("/api/auth");
 
         // register
-        group.MapPost("/register", async (AppDbContext db, [FromBody] RegisterRequest request) =>
+        group.MapPost("/register", async (AppDbContext db, IMapper mapper, [FromBody] RegisterRequest request) =>
         {
             try 
             {
@@ -33,15 +35,9 @@ public static class AuthEndpoints
                 // Şifreyi hashleyerek güvenli hale getiriyoruz
                 var salt = BCrypt.Net.BCrypt.GenerateSalt();
                 var hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password, salt);
-
-                var newUser = new User
-                {
-                    Id = Guid.NewGuid(),
-                    FullName = request.FullName,
-                    Email = request.Email,
-                    PasswordHash = hashedPassword,
-                    CreatedAt = DateTime.UtcNow
-                };
+ 
+                var newUser = mapper.Map<User>(request);
+                newUser.PasswordHash = hashedPassword;
 
                 db.Users.Add(newUser);
                 await db.SaveChangesAsync(System.Threading.CancellationToken.None);
@@ -54,7 +50,7 @@ public static class AuthEndpoints
         });
 
         // 2. GİRİŞ YAPMA (LOGIN)
-        group.MapPost("/login", async (AppDbContext db, IConfiguration config, [FromBody] LoginRequest request) =>
+        group.MapPost("/login", async (AppDbContext db, IConfiguration config, IMapper mapper, [FromBody] LoginRequest request) =>
         {
             // Kullanıcıyı emaili ile arıyoruz
             var user = await db.Users.FirstOrDefaultAsync(x => x.Email == request.Email, System.Threading.CancellationToken.None);
@@ -66,13 +62,12 @@ public static class AuthEndpoints
 
             // Giriş başarılı, JWT token'ı manuel olarak üretiyoruz
             var tokenString = GenerateJwtToken(user, config);
-
+ 
+            var userResponse = mapper.Map<UserResponse>(user);
             return Results.Ok(new 
             { 
                 Token = tokenString, 
-                FullName = user.FullName,
-                Email = user.Email,
-                Id = user.Id
+                User = userResponse
             });
         });
     }
@@ -102,6 +97,3 @@ public static class AuthEndpoints
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }
-
-public record RegisterRequest(string FullName, string Email, string Password);
-public record LoginRequest(string Email, string Password);

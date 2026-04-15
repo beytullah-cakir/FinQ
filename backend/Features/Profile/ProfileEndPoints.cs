@@ -8,6 +8,8 @@ using System.Security.Claims;
 using System.Text;
 using BCrypt.Net;
 using Microsoft.EntityFrameworkCore;
+using AutoMapper;
+using PersonalFinanceTracker.Infrastructure.Dtos;
 
 namespace PersonalFinanceTracker.Features.Profile;
 
@@ -19,7 +21,7 @@ public static class ProfileEndPoints
                        .RequireAuthorization();
 
         // Profil Bilgilerini Güncelleme
-        group.MapPut("/update", async (AppDbContext db, ClaimsPrincipal user, [FromBody] UpdateProfileRequest request) =>
+        group.MapPut("/update", async (AppDbContext db, ClaimsPrincipal user, IMapper mapper, [FromBody] UpdateProfileRequest request) =>
         {
             var userId = GetUserId(user);
             var currentUser = await db.Users.FirstOrDefaultAsync(x => x.Id == userId, System.Threading.CancellationToken.None);
@@ -48,10 +50,11 @@ public static class ProfileEndPoints
             
             await db.SaveChangesAsync(System.Threading.CancellationToken.None);
 
+            var userResponse = mapper.Map<UserResponse>(currentUser);
             return Results.Ok(new 
             { 
                 message = "Profil başarıyla güncellendi.",
-                user = new { currentUser.FullName, currentUser.Email, currentUser.Id }
+                user = userResponse
             });
         });
     }
@@ -69,7 +72,6 @@ public static class ProfileEndPoints
         return Guid.Parse(sub);
     }
 
-    private record UpdateProfileRequest(string FullName, string Email, string? Password);
 }
 
 
