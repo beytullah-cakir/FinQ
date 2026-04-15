@@ -1,60 +1,84 @@
-# FinQ - Kişisel Finans Takip Uygulaması
+# 🪙 FinQ - Modern Kişisel Finans Takip Uygulaması
 
-FinQ, modern teknolojilerle geliştirilmiş, kullanıcı dostu ve şık bir kişisel finans yönetim uygulamasıdır. Gelir ve giderlerinizi takip etmenize, kategori bazlı harcama dağılımınızı görmenize ve finansal durumunuzu kontrol altında tutmanıza yardımcı olur.
+FinQ, harcamalarınızı ve gelirlerinizi şık, modern ve performanslı bir arayüzle takip etmenize olanak tanıyan tam donanımlı bir finansal yönetim platformudur.
 
-## 🚀 Teknolojiler
+![FinQ Preview](https://via.placeholder.com/1200x600?text=FinQ+-+Personal+Finance+Tracker)
 
-### Backend
-- **.NET 10** (Minimal APIs)
-- **Entity Framework Core** (Npgsql)
-- **PostgreSQL** (Supabase Managed DB)
-- **BCrypt.Net** (Şifre güvenliği)
-- **JWT** (Kimlik doğrulama)
+## 🚀 Teknolojik Mimari
 
-### Frontend
-- **React 19** + **Vite**
-- **Zustand** (State management)
-- **Tailwind CSS** (Styling)
-- **Lucide React** (Icons)
-- **Recharts** (Grafikler)
-- **Axios** (API iletişim)
+Proje, hem backend hem de frontend tarafında en modern pratikler ve kütüphaneler kullanılarak "Feature-Based" (Özellik Bazlı) bir mimariyle geliştirilmiştir.
 
-## ✨ Özellikler
+### Backend ( .NET 10 )
+- **Minimal APIs:** Hafif ve yüksek performanslı API yapısı.
+- **Entity Framework Core (Npgsql):** PostgreSQL ile güçlü ve tip güvenli veritabanı etkileşimi.
+- **Vertical Slice Architecture:** `Domain`, `Features` ve `Infrastructure` katmanlarıyla yüksek modülerlik.
+- **AutoMapper:** DTO ve Domain model eşleştirmeleri için merkezi yönetim.
+- **FluentValidation:** API istekleri için otomatik ve kural tabanlı validasyon.
+- **Global Exception Handling:** Merkezi hata yönetimi ve standart `ProblemDetails` yanıtları.
+- **JWT & BCrypt:** Güvenli kimlik doğrulama ve şifreleme.
 
-- 🔐 **Güvenli Kimlik Doğrulama:** Register ve Login işlemleri, JWT tabanlı oturum yönetimi.
-- 📊 **Dashboard:** Toplam harcama özeti ve harcama dağılımını gösteren interaktif grafikler.
-- 💸 **İşlem Yönetimi:** Harcama ekleme (başlık, miktar, tarih, kategori) ve silme işlemleri.
-- 👤 **Profil Yönetimi:** Ad, Email ve Şifre güncelleme desteği.
-- 🌓 **Karanlık Mod:** Göz yormayan modern Dark Mode desteği (FOUC korumalı).
-- 📱 **Responsive Tasarım:** Mobil ve masaüstü uyumlu arayüz.
+### Frontend ( React 19 + Vite )
+- **Zustand:** Kompakt ve hızlı state yönetimi.
+- **Tailwind CSS 4:** Modern, utility-first stil yönetimi.
+- **Vite PWA:** Çevrimdışı çalışma ve "Add to Home Screen" desteği.
+- **Recharts:** Harcama dağılımı için dinamik grafikler.
+- **React Router 7:** Gelişmiş routing ve veri yükleme desteği.
+- **Lucide React:** Modern ve hafif ikon seti.
 
-## 🛠️ Kurulum ve Çalıştırma
+## ✨ Temel Özellikler
 
-Projenin çalışması için hem **Backend** hem de **Frontend** katmanlarının aynı anda çalışıyor olması gerekir.
+- 🔐 **Gelişmiş Kimlik Doğrulama:** JWT tabanlı güvenli oturum yönetimi ve kullanıcı profil güncellemeleri.
+- 📊 **Dinamik Dashboard:** Toplam denge, gelir/gider özeti ve kategori bazlı harcama grafikleri.
+- 💸 **İşlem Yönetimi:** Harcamaların başlık, miktar, kategori ve tarih bazlı takibi.
+- 📱 **PWA Desteği:** Uygulamayı telefonunuza veya masaüstünüze uygulama olarak yükleyin.
+- 🌓 **Akıllı Karanlık Mod:** Tarayıcı tercihlerine uyumlu, şık Dark Mode deneyimi.
+- 🛡️ **Veri Validasyonu:** Hatalı veri girişlerini önleyen güçlü backend ve frontend validasyonları.
 
-### 1. Veritabanı Hazırlığı
-- [Supabase](https://supabase.com/) üzerinde bir PostgreSQL veritabanı oluşturun.
-- Gerekli tabloları oluşturmak için veritabanında ilgili şemayı (`users`, `transactions`) oluşturun.
+## 🛠️ Kurulum Rehberi
 
-### 2. Backend'i Başlatma
-- `backend/appsettings.json` dosyasındaki `ConnectionStrings:DefaultConnection` kısmına veritabanı bağlantı dizinizi ekleyin.
-- Supabase JWT Secret bilgisini ekleyin.
-- Terminalden ilgili klasöre gidin ve çalıştırın:
-  ```bash
-  cd backend
-  dotnet run
-  ```
-  *Varsayılan port:* `http://localhost:5124`
+### 1. Veritabanı (Supabase PostgreSQL)
+1. [Supabase](https://supabase.com/) üzerinde bir proje oluşturun.
+2. `backend/schema.sql` içerisindeki SQL kodlarını SQL Editor üzerinden çalıştırarak tabloları oluşturun.
 
-### 3. Frontend'i Başlatma
-- Terminalden ilgili klasöre gidin:
-  ```bash
-  cd frontend
-  npm install
-- Frontend'i başlatın:
-  ```bash
-  npm run dev
-  ```
+### 2. Backend Yapılandırması
+1. `backend/appsettings.json` dosyasını düzenleyin:
+   - `ConnectionStrings:DefaultConnection` -> Supabase bağlantı dizgesi.
+   - `Supabase:Url`, `Supabase:Key`, `Supabase:JwtSecret` bilgilerini girin.
+2. Servisi başlatın:
+   ```bash
+   cd backend
+   dotnet run
+   ```
+
+### 3. Frontend Yapılandırması
+1. Bağımlılıkları yükleyin:
+   ```bash
+   cd frontend
+   npm install
+   ```
+2. Geliştirme modunda başlatın:
+   ```bash
+   npm run dev
+   ```
+
+## 📂 Klasör Yapısı
+
+```text
+FinQ/
+├── backend/                  # .NET 10 API
+│   ├── Domain/               # Modeller ve Entity'ler
+│   ├── Features/             # API Endpoints (Auth, Transaction, Profile)
+│   ├── Infrastructure/       # Data, Validation, Mapping, Exception Handling
+│   └── schema.sql            # Veritabanı şeması
+├── frontend/                 # React 19 Uygulaması
+│   ├── src/
+│   │   ├── components/       # UI Bileşenleri (Layout, Common)
+│   │   ├── features/         # Sayfa bazlı özellikler (Auth, Dashboard)
+│   │   ├── store/            # Zustand state yönetimi
+│   │   └── services/         # Axios API servisleri
+│   └── public/               # PWA ve statik varlıklar
+└── README.md
+```
 
 ## 📝 Lisans
-Bu proje geliştirme ve öğrenme amaçlı oluşturulmuştur.
+Bu proje geliştirme portfolyosu amacıyla oluşturulmuştur. Tüm hakları saklıdır.
