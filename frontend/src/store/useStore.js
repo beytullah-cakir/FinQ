@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { expensesAPI, authAPI } from '../services/apiService';
+import { expensesAPI, authAPI, profileAPI } from '../services/apiService';
 
 const storedUser = localStorage.getItem('user_info');
 
@@ -60,6 +60,32 @@ export const useStore = create((set) => ({
     localStorage.removeItem('jwt_token');
     localStorage.removeItem('user_info');
     set({ user: null, isAuthenticated: false, expenses: [] });
+  },
+
+  updateUser: async (updateData) => {
+    set({ isLoading: true, error: null });
+    try {
+      // Backend expects: FullName, Email, Password (optional)
+      const data = await profileAPI.update({
+        fullName: updateData.name,
+        email: updateData.email,
+        password: updateData.password
+      });
+      
+      const updatedUser = {
+        name: data.user.FullName || data.user.fullName,
+        email: data.user.Email || data.user.email,
+        id: data.user.Id || data.user.id
+      };
+
+      localStorage.setItem('user_info', JSON.stringify(updatedUser));
+      set({ user: updatedUser, isLoading: false });
+      return true;
+    } catch (err) {
+      const message = err.response?.data?.message || 'Güncelleme başarısız';
+      set({ error: message, isLoading: false });
+      return false;
+    }
   },
 
   fetchExpenses: async () => {

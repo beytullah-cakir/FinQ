@@ -79,4 +79,12 @@ export const expensesAPI = {
   },
 };
 
+export const profileAPI = {
+  update: async (data) => {
+    // API expects FullName, Email, Password (optional)
+    const response = await apiService.put('profile/update', data);
+    return response.data;
+  },
+};
+
 export default apiService;

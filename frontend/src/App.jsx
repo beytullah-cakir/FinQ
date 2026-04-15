@@ -3,7 +3,6 @@ import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Expenses from './pages/Expenses';
 import Settings from './pages/Settings';
 import { useStore } from './store/useStore';
 
@@ -18,7 +17,6 @@ function App() {
         
         <Route path="/" element={<Layout />}>
           <Route index element={<Dashboard />} />
-          <Route path="expenses" element={<Expenses />} />
           <Route path="settings" element={<Settings />} />
         </Route>
         

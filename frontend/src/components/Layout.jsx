@@ -55,15 +55,7 @@ export default function Layout() {
           >
             <LayoutDashboard className="h-5 w-5" /> Dashboard
           </NavLink>
-          <NavLink 
-            to="/expenses" 
-            className={({ isActive }) => cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all font-medium",
-              isActive ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" : "text-muted-foreground hover:bg-muted hover:text-foreground"
-            )}
-          >
-            <Wallet className="h-5 w-5" /> İşlemler
-          </NavLink>
+
           <NavLink 
             to="/settings" 
             className={({ isActive }) => cn(

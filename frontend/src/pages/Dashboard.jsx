@@ -205,7 +205,7 @@ export default function Dashboard() {
         <div className="xl:col-span-2">
           <div className="bg-card text-card-foreground border border-border shadow-sm rounded-2xl p-6 h-full flex flex-col">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-              <h3 className="text-xl font-semibold">Son Harcamalar</h3>
+              <h3 className="text-xl font-semibold">Harcamalar</h3>
               
               <div className="flex items-center gap-2 bg-background border border-input rounded-lg p-1 w-full sm:w-auto">
                 <button 

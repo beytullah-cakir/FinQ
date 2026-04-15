@@ -3,6 +3,7 @@ using PersonalFinanceTracker.Infrastructure.Data;
 using PersonalFinanceTracker.Infrastructure.ExceptionHandling;
 using PersonalFinanceTracker.Features.Transactions;
 using PersonalFinanceTracker.Features.Auth;
+using PersonalFinanceTracker.Features.Profile;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -85,5 +86,6 @@ app.UseHttpsRedirection();
 // API Endpoints
 app.MapAuthEndpoints();
 app.MapTransactionEndpoints();
+app.MapProfileEndpoints();
 
 app.Run();
